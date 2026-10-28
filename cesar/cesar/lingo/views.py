@@ -286,11 +286,14 @@ def crm_contacts(request):
         ]
     data = {}
 
-    if request.method == 'POST':
-        pass
-    elif request.method == 'GET':
-        # List the contacts we have
-        data = { 'data':  contact_list }
+    # First: authenticated?
+    bAuthenticated = user_is_authenticated(request)
+    if bAuthenticated and request.user.is_superuser:
+        if request.method == 'POST':
+            pass
+        elif request.method == 'GET':
+            # List the contacts we have
+            data = { 'data':  contact_list }
     # Return the information
     # return JsonResponse(data, safe=False)
     return JsonResponse(data)
@@ -1439,7 +1442,7 @@ class ExperimentEdit(BasicLingo):
     title = "Experiment"
     afternewurl = ""
     prefix = "exp"
-    need_authentication = False
+    need_authentication = True # False - see issue #217
     form_objects = [{'form': ExperimentForm, 'prefix': prefix, 'readonly': False}]
     meta_fields = ['ptcpid', 'age', 'gender', 'engfirst', 'lngfirst', 'lngother', 'eduother', 'edu', 'teaches', 'email']
 
@@ -1586,7 +1589,7 @@ class ParticipantDetails(BasicLingo):
     MainModel = Participant
     template_name = 'lingo/participant.html'
     title = "Participant"
-    need_authentication = False
+    need_authentication = True # see issue #217 False
     ptcpfields = ""
     metafields = ""
     form_objects = [{'form': ParticipantForm, 'prefix': 'ptcp', 'readonly': False}]
@@ -1627,6 +1630,7 @@ class ParticipantDetails(BasicLingo):
     def custom_init(self):
         # Find out which participant fields need to be shown
         ptcpfields = []
+        metafields = {}
         if 'experiment_id' in self.qd:
             experiment = Experiment.objects.filter(id=self.qd['experiment_id']).first()
             if experiment != None:
