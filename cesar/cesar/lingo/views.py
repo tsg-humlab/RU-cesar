@@ -320,6 +320,7 @@ class BasicLingo(View):
     previous = None         # Return to this
     bDebug = False          # Debugging information
     need_authentication = True
+    need_editor = False
     data = {'status': 'ok', 'html': ''}       # Create data to be returned    
     
     def post(self, request, pk=None):
@@ -652,13 +653,20 @@ class BasicLingo(View):
         return JsonResponse(self.data)
       
     def checkAuthentication(self,request):
+        bResult = False
         # first check for authentication
         if self.need_authentication and not request.user.is_authenticated:
             # Simply redirect to the home page
             self.data['html'] = "Please log in to work on this project"
-            return False
+            bResult = False
         else:
-            return True
+            # User is authenticated - but what about editorship?
+            if self.need_editor:
+                bResult = user_is_ingroup(self.request, "lingo-editor")
+            else:
+                bResult = True
+        # Return the result
+        return bResult
 
     def rebuild_formset(self, prefix, formset):
         return formset
@@ -1443,6 +1451,7 @@ class ExperimentEdit(BasicLingo):
     afternewurl = ""
     prefix = "exp"
     need_authentication = True # False - see issue #217
+    need_editor = True
     form_objects = [{'form': ExperimentForm, 'prefix': prefix, 'readonly': False}]
     meta_fields = ['ptcpid', 'age', 'gender', 'engfirst', 'lngfirst', 'lngother', 'eduother', 'edu', 'teaches', 'email']
 
@@ -1590,6 +1599,7 @@ class ParticipantDetails(BasicLingo):
     template_name = 'lingo/participant.html'
     title = "Participant"
     need_authentication = True # see issue #217 False
+    need_editor = True
     ptcpfields = ""
     metafields = ""
     form_objects = [{'form': ParticipantForm, 'prefix': 'ptcp', 'readonly': False}]

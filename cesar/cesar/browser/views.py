@@ -407,7 +407,7 @@ def sync_crpp_start(request):
 
     try:
         # Make sure authentication is tone
-        if user_is_authenticated(request): # request.user.user_is_authenticated:
+        if user_is_authenticated(request) and user_is_ingroup(request, "admin_user"):
             # Get the user
             username = request.user.username
             # Get the synchronization type
@@ -583,8 +583,7 @@ def sync_crpp_progress(request):
 
     try:
         # Make sure authentication is tone
-        if user_is_authenticated(request):
-        # if request.user.user_is_authenticated:
+        if user_is_authenticated(request) and user_is_ingroup(request, "admin_user"):
             # Get the user
             username = request.user.username
             # Get the synchronization type
